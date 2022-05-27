@@ -65,4 +65,8 @@ def find_jobs():
 
 
 if __name__ == '__main__':
-    find_jobs()
+    while True:
+        find_jobs()
+        waiting_time = 24*60
+        print("Programa executado com sucesso. Próxima execução em 24 horas.")
+        time.sleep(60*waiting_time)
