@@ -2,9 +2,11 @@ from bs4 import BeautifulSoup
 import requests
 import pandas as pd
 import time
+from functionality.checks import skills_check
+from functionality.checks import link_add
 
 def find_jobs():
-    html_text = requests.get('https://www.99freelas.com.br/projects?q=acessor%20de%20investimentos').text
+    html_text = requests.get('https://www.99freelas.com.br/projects?q=python').text
     soup = BeautifulSoup(html_text, 'lxml')
     if soup.find('ul') == None:
         print("Parece que não há ofertas nessa área no momento.")
@@ -26,11 +28,11 @@ def find_jobs():
             first_job = soup.find('li', class_='with-flag result-item first-with-flag')
             first_job_name = first_job.find('h1').text.replace('\n', '')
             first_job_skills = first_job.find('p', class_='item-text habilidades')
-            if (first_job_skills != None):
-                first_job_skills = first_job_skills.text.strip('\n').replace('\n', ', ')
-            else:
-                first_job_skills = 'Sem pré-requisitos'
-            link = 'https://www.99freelas.com.br/' + first_job.find('h1', class_='title').a['href']
+
+            # Check if there's any required skills
+            first_job_skills = skills_check(first_job_skills)
+
+            link = link_add(first_job)
             names.append(first_job_name)
             skills.append(first_job_skills)
             links.append(link)
@@ -42,14 +44,16 @@ def find_jobs():
         if with_flag_jobs != None:
             for index, wfj in enumerate(with_flag_jobs):
                 wfj_name = wfj.find('h1', class_='title').text.replace('\n', '')
-                wfj_skills = wfj.find('p', class_="item-text habilidades").text.strip('\n').replace('\n', ', ')
-                link = 'https://www.99freelas.com.br/' + wfj.find('h1', class_='title').a['href']
+                wfj_skills = wfj.find('p', class_="item-text habilidades")
+
+                # Check if there's any required skills
+                wfj_skills = skills_check(wfj_skills)
+                link = link_add(wfj)
                 if wfj_name not in names:
                     names.append(wfj_name)
                     skills.append(wfj_skills)
                     links.append(link)
         else: pass
-
 
         # GETTING THE REGULAR JOBS
 
@@ -66,10 +70,10 @@ def find_jobs():
                 for index, job in enumerate(jobs):
                     job_name = job.find('h1', class_='title').text.replace('\n', '')
                     job_skills = job.find('p', class_="item-text habilidades")
-                    link = 'https://www.99freelas.com.br/' + job.find('h1', class_='title').a['href']
-                    if (job_skills != None):
-                        job_skills = job_skills.text.strip('\n').replace('\n', ', ')
-                    else: job_skills = 'Sem pré-requisitos'
+                    link = link_add(job)
+
+                    # Check if there's any required skills
+                    job_skills = skills_check(job_skills)
 
                     if job_name not in names:
                         names.append(job_name)
